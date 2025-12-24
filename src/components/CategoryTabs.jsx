@@ -1,11 +1,10 @@
 import React from 'react';
 
-const categories = [
-  { id: 'all', label: 'All' },
-  { id: 'burger', label: 'Burgers' },
-  { id: 'side', label: 'Sides' },
-  { id: 'drink', label: 'Drinks' },
-];
+import { categories } from '../config';
+
+/* 
+  Removed hardcoded categories. 
+*/
 
 export default function CategoryTabs({ selectedCategory, onSelectCategory }) {
   return (
@@ -15,15 +14,15 @@ export default function CategoryTabs({ selectedCategory, onSelectCategory }) {
           key={cat.id}
           onClick={() => onSelectCategory(cat.id)}
           className={`
-            px-5 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-colors
+            px-5 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all transform active:scale-95
             ${
               selectedCategory === cat.id
-                ? 'bg-orange-500 text-white shadow-md'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-banana-black text-banana-yellow shadow-lg scale-105'
+                : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
             }
           `}
         >
-          {cat.label}
+          {cat.name}
         </button>
       ))}
     </div>

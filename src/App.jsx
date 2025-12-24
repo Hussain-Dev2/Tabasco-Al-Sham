@@ -46,13 +46,22 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50 pb-32 font-sans">
       {/* Header */}
-      <div className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-center">
-          <h1 className="text-xl font-bold text-gray-800">🍔 Burger Joint</h1>
+      {/* Header */}
+      <div className="bg-banana-yellow sticky top-0 z-10 shadow-md">
+        <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+             <div className="bg-white p-1.5 rounded-full shadow-sm">
+                <span className="text-2xl" role="img" aria-label="banana">🍌</span>
+             </div>
+             <div>
+               <h1 className="text-xl font-bold text-banana-black leading-none">Karazat Banana</h1>
+               <span className="text-xs font-medium text-banana-black/80">أطيب الحلويات والمكسرات</span>
+             </div>
+          </div>
         </div>
         
         {/* Categories */}
-        <div className="max-w-md mx-auto">
+        <div className="max-w-md mx-auto pb-2">
           <CategoryTabs 
             selectedCategory={selectedCategory} 
             onSelectCategory={setSelectedCategory} 

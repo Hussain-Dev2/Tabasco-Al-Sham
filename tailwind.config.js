@@ -4,7 +4,16 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        'banana-yellow': '#FFD700', // Gold/Yellow
+        'banana-black': '#111111',  // Deep Black
+      },
+      fontFamily: {
+        'sans': ['Inter', 'sans-serif'], // Or any other nice font
+      }
+    },
   },
   plugins: [],
 }
+
