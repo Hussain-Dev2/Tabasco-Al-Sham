@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import Image from "next/image";
 import CheckoutModal from "./CheckoutModal";
 import { getStoreStatus } from "@/app/actions";
 
@@ -160,7 +161,13 @@ export default function MenuClient({ categories, isOpen }: { categories: Categor
             <div className="relative group mb-10 transform hover:rotate-3 transition-transform duration-700">
                <div className="absolute -inset-4 bg-gradient-to-r from-brand-red to-brand-orange rounded-[3rem] blur-2xl opacity-10 group-hover:opacity-30 transition"></div>
                <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-[3rem] overflow-hidden border border-white/10 shadow-3xl bg-black">
-                  <img src="/55555555555_page-0001.jpg" alt="Logo" className="w-full h-full object-cover scale-110" />
+                  <Image 
+                    src="/55555555555_page-0001.jpg" 
+                    alt="Logo" 
+                    fill 
+                    priority 
+                    className="object-cover scale-110" 
+                  />
                </div>
             </div>
 
@@ -225,7 +232,13 @@ export default function MenuClient({ categories, isOpen }: { categories: Categor
                   
                   <div className="w-full h-40 md:h-72 mb-4 md:mb-10 rounded-[1.2rem] md:rounded-[3rem] overflow-hidden relative shadow-3xl bg-[#0f0f10] border border-white/5 group-hover:border-brand-red/20 transition-all duration-700">
                      {product.imageUrl ? (
-                        <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-[3000ms]" />
+                        <Image 
+                           src={product.imageUrl} 
+                           alt={product.name} 
+                           fill 
+                           sizes="(max-width: 768px) 50vw, 33vw"
+                           className="object-cover group-hover:scale-125 transition-transform duration-[3000ms]" 
+                        />
                      ) : (
                         <div className="w-full h-full flex items-center justify-center text-4xl md:text-7xl opacity-10">🍜</div>
                      )}
@@ -314,8 +327,8 @@ export default function MenuClient({ categories, isOpen }: { categories: Categor
                {/* Branding & Socials */}
                <div className="space-y-10 flex flex-col items-center md:items-end">
                   <div className="flex flex-col items-center md:items-end gap-4">
-                     <div className="w-20 h-20 rounded-3xl overflow-hidden border border-white/10 mb-2 shadow-2xl skew-y-3">
-                        <img src="/55555555555_page-0001.jpg" alt="Logo" className="w-full h-full object-cover" />
+                     <div className="w-20 h-20 rounded-3xl overflow-hidden border border-white/10 mb-2 shadow-2xl skew-y-3 relative">
+                        <Image src="/55555555555_page-0001.jpg" alt="Logo" fill className="object-cover" />
                      </div>
                      <h3 className="text-4xl font-black text-white italic tracking-tighter leading-none italic animate-gradient-x bg-clip-text text-transparent bg-gradient-to-r from-white via-white/80 to-white">TABASCO AL-SHAM</h3>
                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] max-w-xs leading-relaxed text-center md:text-right">نقدم لكم أفخر النكهات الشامية الأصيلة والوصفات الأسطورية منذ {new Date().getFullYear()}</p>
@@ -389,6 +402,29 @@ export default function MenuClient({ categories, isOpen }: { categories: Categor
           onSuccess={() => { setCart([]); setIsCheckoutOpen(false); }}
         />
       )}
+
+      {/* FLOATING BOT/SERVICE ICON */}
+      <div className="fixed bottom-32 left-6 z-[90] animate-bounce-slow">
+        <a 
+          href="https://wa.me/9647727681903" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="relative block group"
+        >
+          <div className="absolute -inset-2 bg-brand-orange rounded-full blur opacity-20 group-hover:opacity-50 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+          <div className="relative w-14 h-14 md:w-16 md:h-16 rounded-full glass border border-white/20 bg-brand-orange shadow-2xl overflow-hidden active:scale-90 transition-all">
+            <Image 
+              src="/55555555555_page-0001.jpg" 
+              alt="Bot Service" 
+              fill 
+              className="object-cover hover:scale-125 transition-transform" 
+            />
+          </div>
+          <div className="absolute right-full mr-4 top-1/2 -translate-y-1/2 glass px-4 py-2 rounded-xl border border-white/10 whitespace-nowrap text-[10px] font-black text-white pointer-events-none opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+             هل تحتاج مساعدة؟ 👋
+          </div>
+        </a>
+      </div>
     </div>
   );
 }
