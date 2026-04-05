@@ -114,6 +114,9 @@ export default function AdminDashboard({ initialCategories, initialOrders, isOpe
     setIsUploading(true);
     
     try {
+      if (!supabase) {
+        throw new Error("لم يتم تكوين Supabase! يرجى إضافة NEXT_PUBLIC_SUPABASE_URL و NEXT_PUBLIC_SUPABASE_ANON_KEY إلى الإعدادات.");
+      }
       // 1. Create a unique filename
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
