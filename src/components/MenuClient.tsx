@@ -1,9 +1,14 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
-import CheckoutModal from "./CheckoutModal";
 import { getStoreStatus } from "@/app/actions";
+
+const CheckoutModal = dynamic(() => import("./CheckoutModal"), {
+  ssr: false,
+  loading: () => null
+});
 
 type Product = {
   id: string;
@@ -41,19 +46,20 @@ export default function MenuClient({ categories, isOpen }: { categories: Categor
   }, [isOpen]);
 
   useEffect(() => {
+    let lastScrollY = window.scrollY;
     const handleScroll = () => {
-      const isScrolled = window.scrollY > 80;
-      setScrolled((prev) => (prev !== isScrolled ? isScrolled : prev));
+      const currentScrollY = window.scrollY;
+      if (Math.abs(currentScrollY - lastScrollY) < 10) return;
+      const isScrolled = currentScrollY > 80;
+      setScrolled(isScrolled);
+      lastScrollY = currentScrollY;
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     
-    // Sync store status on mount
     getStoreStatus().then(status => setLocalIsOpen(status));
-
-    // Poll for status changes every 30 seconds
     const interval = setInterval(() => {
       getStoreStatus().then(status => setLocalIsOpen(status));
-    }, 30000);
+    }, 60000);
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
@@ -224,105 +230,18 @@ export default function MenuClient({ categories, isOpen }: { categories: Categor
 
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-12 pb-60">
           {displayedProducts.map((product, idx) => (
-            <div 
-              key={`${product.id}-${idx}`} 
-              className="group relative animate-slide-up" 
-              style={{ 
-                animationDelay: `${idx * 80}ms`,
-                contentVisibility: 'auto',
-                containIntrinsicSize: '400px'
-              }}
-            >
-               <div className={`glass bg-white/[0.01] rounded-[1.5rem] md:rounded-[4rem] p-3 md:p-8 border border-white/5 hover:border-brand-red/40 hover:bg-white/[0.04] transition-all duration-700 relative overflow-hidden flex flex-col h-full ${(!localIsOpen || product.isAvailable === false) && 'grayscale opacity-60 pointer-events-none'}`}>
-                  {product.isAvailable === false && (
-                     <div className="absolute top-4 left-[-35px] bg-red-600 text-white text-[8px] md:text-[10px] font-black px-10 py-1 rotate-[-45deg] z-50 shadow-xl uppercase tracking-tighter">نفدت الكمية</div>
-                  )}
-                  
-                  <div className="w-full h-40 md:h-72 mb-4 md:mb-10 rounded-[1.2rem] md:rounded-[3rem] overflow-hidden relative shadow-3xl bg-[#0f0f10] border border-white/5 group-hover:border-brand-red/20 transition-all duration-700">
-                     {product.imageUrl ? (
-                        <Image 
-                           src={product.imageUrl} 
-                           alt={product.name} 
-                           fill 
-                           sizes="(max-width: 768px) 50vw, 33vw"
-                           className="object-cover group-hover:scale-125 transition-transform duration-[3000ms]" 
-                        />
-                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-4xl md:text-7xl opacity-10">🍜</div>
-                     )}
-                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-60"></div>
-                     <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6 glass bg-black/80 px-4 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl border border-white/10 shadow-2xl">
-                        <span className="text-lg md:text-2xl font-black text-brand-orange tracking-tighter italic">
-                           {(selectedSizes[product.id]?.price || product.price).toLocaleString("ar-IQ")}
-                           <small className="text-[9px] md:text-[10px] font-bold opacity-40 mr-1 uppercase NOT-italic">د.ع</small>
-                        </span>
-                     </div>
-                  </div>
-
-                  <div className="flex-grow">
-                     <h3 className="text-xl md:text-2xl font-black text-white mb-2 md:mb-3 tracking-tight">{product.name}</h3>
-                     {product.description && (
-                        <p className="text-[11px] md:text-[13px] text-gray-500 font-bold leading-relaxed line-clamp-2 opacity-70">
-                           {product.description.includes("SIZES:") ? product.description.split("SIZES:")[0] : product.description}
-                        </p>
-                     )}
-                  </div>
-
-                  <div className="mt-4 md:mt-10 pt-4 md:pt-8 border-t border-white/5">
-                      {localIsOpen ? (
-                         <>
-                            {parsePizzaSizes(product.description) ? (
-                               <div className="space-y-4">
-                                  <div className="grid grid-cols-3 gap-2">
-                                     {parsePizzaSizes(product.description)?.map((size) => (
-                                        <button 
-                                          key={size.name}
-                                          onClick={() => setSelectedSizes(prev => ({ ...prev, [product.id]: size }))}
-                                          className={`py-2 px-1 rounded-xl text-[9px] font-black border transition-all ${
-                                            (selectedSizes[product.id]?.name === size.name || (!selectedSizes[product.id] && size.name === "وسط")) 
-                                              ? 'bg-brand-orange text-white border-brand-orange scale-105' 
-                                              : 'bg-white/5 text-gray-500 border-white/10'
-                                          }`}
-                                        >
-                                           {size.name}
-                                        </button>
-                                     ))}
-                                  </div>
-                                  
-                                  {getQuantity(product.id, selectedSizes[product.id]?.name || "وسط") > 0 ? (
-                                     <div className="flex items-center w-full justify-between bg-white/5 rounded-xl md:rounded-3xl p-1 md:p-1.5 border border-white/10">
-                                        <button onClick={() => removeFromCart(product.id, selectedSizes[product.id]?.name || "وسط")} className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-white text-lg md:text-2xl font-bold active:bg-white/10 rounded-lg">-</button>
-                                        <span className="text-xs md:text-lg font-black text-white">{getQuantity(product.id, selectedSizes[product.id]?.name || "وسط")}</span>
-                                        <button onClick={() => addToCart(product, selectedSizes[product.id] || parsePizzaSizes(product.description)?.find(s => s.name === "وسط"))} className="w-10 h-10 md:w-12 md:h-12 bg-brand-red text-white flex items-center justify-center font-bold rounded-lg md:rounded-2xl shadow-2xl shadow-brand-red/40 active:scale-90">+</button>
-                                     </div>
-                                  ) : (
-                                     <button onClick={() => addToCart(product, selectedSizes[product.id] || parsePizzaSizes(product.description)?.find(s => s.name === "وسط"))} className="w-full bg-white/5 hover:bg-brand-red text-white py-4 md:py-5 rounded-xl md:rounded-3xl font-black text-[11px] md:text-xs tracking-widest transition-all active:scale-95 shadow-lg">
-                                        إضافة {selectedSizes[product.id]?.name || "وسط"} للطلب
-                                     </button>
-                                  )}
-                               </div>
-                            ) : (
-                               <div className="flex items-center justify-between w-full">
-                                  {product.isAvailable === false ? (
-                                     <div className="w-full text-center py-4 bg-red-500/10 rounded-xl md:rounded-3xl border border-red-500/20 text-red-500 font-black text-[9px] md:text-[10px]">غير متوفر</div>
-                                  ) : getQuantity(product.id) > 0 ? (
-                                     <div className="flex items-center w-full justify-between bg-white/5 rounded-xl md:rounded-3xl p-1 md:p-1.5 border border-white/10">
-                                        <button onClick={() => removeFromCart(product.id)} className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-white text-lg md:text-2xl font-bold active:bg-white/10 rounded-lg">-</button>
-                                        <span className="text-xs md:text-lg font-black text-white">{getQuantity(product.id)}</span>
-                                        <button onClick={() => addToCart(product)} className="w-10 h-10 md:w-12 md:h-12 bg-brand-red text-white flex items-center justify-center font-bold rounded-lg md:rounded-2xl shadow-2xl shadow-brand-red/40 active:scale-90">+</button>
-                                     </div>
-                                  ) : (
-                                     <button onClick={() => addToCart(product)} className="w-full bg-white/5 hover:bg-brand-red text-white py-4 md:py-5 rounded-xl md:rounded-3xl font-black text-[11px] md:text-xs tracking-widest transition-all active:scale-95 shadow-lg">+ إضافة للطلب</button>
-                                  )}
-                               </div>
-                            )}
-                         </>
-                      ) : (
-                         <div className="w-full text-center text-red-500 font-black text-[11px] py-4 bg-red-500/10 rounded-xl border border-red-500/20 uppercase tracking-widest">مغلق</div>
-                      )}
-                   </div>
-               </div>
-            </div>
+            <ProductCard 
+              key={product.id}
+              product={product}
+              idx={idx}
+              localIsOpen={localIsOpen}
+              getQuantity={getQuantity}
+              addToCart={addToCart}
+              removeFromCart={removeFromCart}
+              parsePizzaSizes={parsePizzaSizes}
+              selectedSize={selectedSizes[product.id]}
+              setSelectedSize={(size) => setSelectedSizes(prev => ({ ...prev, [product.id]: size }))}
+            />
           ))}
         </div>
       </div>
@@ -421,3 +340,124 @@ export default function MenuClient({ categories, isOpen }: { categories: Categor
     </div>
   );
 }
+
+const ProductCard = React.memo(({ 
+  product, 
+  idx, 
+  localIsOpen, 
+  getQuantity, 
+  addToCart, 
+  removeFromCart, 
+  parsePizzaSizes, 
+  selectedSize, 
+  setSelectedSize 
+}: any) => {
+  const currentPrice = selectedSize?.price || product.price;
+  const sizes = parsePizzaSizes(product.description);
+  const activeSize = selectedSize?.name || "وسط";
+  const qty = getQuantity(product.id, sizes ? activeSize : undefined);
+
+  return (
+    <div 
+      className="group relative animate-slide-up" 
+      style={{ 
+        animationDelay: `${idx * 60}ms`,
+        contentVisibility: 'auto',
+        containIntrinsicSize: '400px'
+      }}
+    >
+       <div className={`glass bg-white/[0.01] rounded-[1.5rem] md:rounded-[4rem] p-3 md:p-8 border border-white/5 hover:border-brand-red/40 hover:bg-white/[0.04] transition-all duration-700 relative overflow-hidden flex flex-col h-full ${(!localIsOpen || product.isAvailable === false) && 'grayscale opacity-60 pointer-events-none'}`}>
+          {product.isAvailable === false && (
+             <div className="absolute top-4 left-[-35px] bg-red-600 text-white text-[8px] md:text-[10px] font-black px-10 py-1 rotate-[-45deg] z-50 shadow-xl uppercase tracking-tighter">نفدت الكمية</div>
+          )}
+          
+          <div className="w-full h-40 md:h-72 mb-4 md:mb-10 rounded-[1.2rem] md:rounded-[3rem] overflow-hidden relative shadow-3xl bg-[#0f0f10] border border-white/5 group-hover:border-brand-red/20 transition-all duration-700">
+             {product.imageUrl ? (
+                <Image 
+                   src={product.imageUrl} 
+                   alt={product.name} 
+                   fill 
+                   priority={idx < 6}
+                   sizes="(max-width: 768px) 50vw, 33vw"
+                   className="object-cover group-hover:scale-125 transition-transform duration-[3000ms]" 
+                />
+             ) : (
+                <div className="w-full h-full flex items-center justify-center text-4xl md:text-7xl opacity-10">🍜</div>
+             )}
+             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-60"></div>
+             <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6 glass bg-black/80 px-4 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl border border-white/10 shadow-2xl">
+                <span className="text-lg md:text-2xl font-black text-brand-orange tracking-tighter italic">
+                   {currentPrice.toLocaleString("ar-IQ")}
+                   <small className="text-[9px] md:text-[10px] font-bold opacity-40 mr-1 uppercase NOT-italic">د.ع</small>
+                </span>
+             </div>
+          </div>
+
+          <div className="flex-grow">
+             <h3 className="text-xl md:text-2xl font-black text-white mb-2 md:mb-3 tracking-tight">{product.name}</h3>
+             {product.description && (
+                <p className="text-[11px] md:text-[13px] text-gray-500 font-bold leading-relaxed line-clamp-2 opacity-70">
+                   {product.description.includes("SIZES:") ? product.description.split("SIZES:")[0] : product.description}
+                </p>
+             )}
+          </div>
+
+          <div className="mt-4 md:mt-10 pt-4 md:pt-8 border-t border-white/5">
+              {localIsOpen ? (
+                 <>
+                    {sizes ? (
+                       <div className="space-y-4">
+                          <div className="grid grid-cols-3 gap-2">
+                             {sizes.map((size: any) => (
+                                <button 
+                                  key={size.name}
+                                  onClick={() => setSelectedSize(size)}
+                                  className={`py-2 px-1 rounded-xl text-[9px] font-black border transition-all ${
+                                    activeSize === size.name 
+                                      ? 'bg-brand-orange text-white border-brand-orange scale-105' 
+                                      : 'bg-white/5 text-gray-500 border-white/10'
+                                  }`}
+                                >
+                                   {size.name}
+                                </button>
+                             ))}
+                          </div>
+                          
+                          {qty > 0 ? (
+                             <div className="flex items-center w-full justify-between bg-white/5 rounded-xl md:rounded-3xl p-1 md:p-1.5 border border-white/10">
+                                <button onClick={() => removeFromCart(product.id, activeSize)} className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-white text-lg md:text-2xl font-bold active:bg-white/10 rounded-lg">-</button>
+                                <span className="text-xs md:text-lg font-black text-white">{qty}</span>
+                                <button onClick={() => addToCart(product, selectedSize || sizes.find((s:any) => s.name === "وسط"))} className="w-10 h-10 md:w-12 md:h-12 bg-brand-red text-white flex items-center justify-center font-bold rounded-lg md:rounded-2xl shadow-2xl shadow-brand-red/40 active:scale-90">+</button>
+                             </div>
+                          ) : (
+                             <button onClick={() => addToCart(product, selectedSize || sizes.find((s:any) => s.name === "وسط"))} className="w-full bg-white/5 hover:bg-brand-red text-white py-4 md:py-5 rounded-xl md:rounded-3xl font-black text-[11px] md:text-xs tracking-widest transition-all active:scale-95 shadow-lg line-clamp-1">
+                                إضافة {activeSize}
+                             </button>
+                          )}
+                       </div>
+                    ) : (
+                       <div className="flex items-center justify-between w-full">
+                          {product.isAvailable === false ? (
+                             <div className="w-full text-center py-4 bg-red-500/10 rounded-xl md:rounded-3xl border border-red-500/20 text-red-500 font-black text-[9px] md:text-[10px]">غير متوفر</div>
+                          ) : qty > 0 ? (
+                             <div className="flex items-center w-full justify-between bg-white/5 rounded-xl md:rounded-3xl p-1 md:p-1.5 border border-white/10">
+                                <button onClick={() => removeFromCart(product.id)} className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-white text-lg md:text-2xl font-bold active:bg-white/10 rounded-lg">-</button>
+                                <span className="text-xs md:text-lg font-black text-white">{qty}</span>
+                                <button onClick={() => addToCart(product)} className="w-10 h-10 md:w-12 md:h-12 bg-brand-red text-white flex items-center justify-center font-bold rounded-lg md:rounded-2xl shadow-2xl shadow-brand-red/40 active:scale-90">+</button>
+                             </div>
+                          ) : (
+                             <button onClick={() => addToCart(product)} className="w-full bg-white/5 hover:bg-brand-red text-white py-4 md:py-5 rounded-xl md:rounded-3xl font-black text-[11px] md:text-xs tracking-widest transition-all active:scale-95 shadow-lg">+ إضافة للطلب</button>
+                          )}
+                       </div>
+                    )}
+                 </>
+              ) : (
+                 <div className="w-full text-center text-red-500 font-black text-[11px] py-4 bg-red-500/10 rounded-xl border border-red-500/20 uppercase tracking-widest">مغلق</div>
+              )}
+           </div>
+       </div>
+    </div>
+  );
+});
+
+ProductCard.displayName = "ProductCard";
