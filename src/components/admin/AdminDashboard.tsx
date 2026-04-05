@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -70,6 +70,7 @@ export default function AdminDashboard({ initialCategories, initialOrders, isOpe
   const [isCatDropdownOpen, setIsCatDropdownOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const catDropdownRef = useRef<HTMLDivElement>(null);
+  const editFormRef = useRef<HTMLDivElement>(null);
 
   const todayOrdersCount = useMemo(() => initialOrders.filter((o: any) => o.status === 'DONE').length, [initialOrders]);
   const activeOrdersCount = useMemo(() => initialOrders.filter((o: any) => o.status !== 'DONE').length, [initialOrders]);
@@ -369,7 +370,7 @@ export default function AdminDashboard({ initialCategories, initialOrders, isOpe
             <div className="lg:col-span-3 space-y-4 md:space-y-10">
               
               {/* Product Form Panel */}
-              <div className="glass bg-white/[0.01] p-4 md:p-12 rounded-2xl md:rounded-[4rem] border border-white/5">
+              <div ref={editFormRef} className="glass bg-white/[0.01] p-4 md:p-12 rounded-2xl md:rounded-[4rem] border border-white/5">
                 <h2 className="font-black text-lg md:text-2xl mb-5 md:mb-10 flex items-center gap-3 flex-row-reverse">
                   <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-brand-red shadow-[0_0_15px_#ff3b3b]"></div>
                   {editingProdId ? 'تعديل الصنف' : 'إضافة صنف جديد'}
@@ -513,7 +514,7 @@ export default function AdminDashboard({ initialCategories, initialOrders, isOpe
                         </div>
                         <div className="flex flex-col gap-1.5 shrink-0">
                           <button
-                            onClick={() => { setEditingProdId(p.id); setEditProdData({ ...p, categoryId: c.id }); window.scrollTo({top: 0, behavior: 'smooth'}); }}
+                            onClick={() => { setEditingProdId(p.id); setEditProdData({ ...p, categoryId: c.id }); setTimeout(() => editFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); }}
                             className="p-2.5 bg-white/5 text-gray-500 rounded-xl hover:text-white active:scale-90 transition-all border border-white/5"
                           >
                             <Icons.Edit />
