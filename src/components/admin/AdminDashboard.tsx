@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -473,11 +473,11 @@ export default function AdminDashboard({ initialCategories, initialOrders, isOpe
                          </span>
                       </div>
                    </div>
-                   <div className="pt-4 flex gap-4 flex-row-reverse">
-                      <button type="submit" className="flex-[2] py-5 bg-brand-red text-white rounded-[1.8rem] font-black text-sm shadow-3xl shadow-brand-red/30 active:scale-[0.98] transition-all">
+                   <div className="pt-4 flex gap-3 flex-row-reverse">
+                       <button type="submit" className="flex-[2] py-4 md:py-5 bg-brand-red text-white rounded-2xl md:rounded-[1.8rem] font-black text-sm shadow-xl shadow-brand-red/30 active:scale-[0.98] transition-all">
                         {editingProdId ? 'حفظ التعديلات' : 'إضافة للمنيو الآن'}
                       </button>
-                      {editingProdId && <button type="button" onClick={() => setEditingProdId(null)} className="flex-1 py-5 bg-white/5 rounded-[1.8rem] font-black text-sm border border-white/5 hover:bg-white/10 transition-all text-white">إلغاء</button>}
+                       {editingProdId && <button type="button" onClick={() => setEditingProdId(null)} className="flex-1 py-4 md:py-5 bg-white/5 rounded-2xl md:rounded-[1.8rem] font-black text-sm border border-white/5 hover:bg-white/10 transition-all text-white">إلغاء</button>}
                    </div>
                 </form>
               </div>
