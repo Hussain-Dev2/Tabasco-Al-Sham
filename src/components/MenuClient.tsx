@@ -95,11 +95,8 @@ export default function MenuClient({ categories, settings }: { categories: Categ
   useEffect(() => {
     let lastScrollY = window.scrollY;
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (Math.abs(currentScrollY - lastScrollY) < 10) return;
-      const isScrolled = currentScrollY > 80;
-      setScrolled(isScrolled);
-      lastScrollY = currentScrollY;
+      const isScrolled = window.scrollY > 120;
+      setScrolled(prev => prev !== isScrolled ? isScrolled : prev);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     
@@ -127,6 +124,10 @@ export default function MenuClient({ categories, settings }: { categories: Categ
     if (activeCategoryId === "all") return "الكل";
     return sortedCategories.find(c => c.id === activeCategoryId)?.name || "";
   }, [activeCategoryId, sortedCategories]);
+
+  const specialCategoryId = useMemo(() => {
+    return categories.find(c => c.name === "الجديد والقسم الخاص")?.id;
+  }, [categories]);
 
   const parsePizzaSizes = (desc: string | null) => {
     if (!desc?.includes("SIZES:")) return null;
@@ -187,6 +188,7 @@ export default function MenuClient({ categories, settings }: { categories: Categ
   const totalItems = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
   const totalPrice = useMemo(() => cart.reduce((sum, item) => sum + ((item.selectedPrice || item.product.price) * item.quantity), 0), [cart]);
 
+
   return (
     <div className="min-h-screen bg-[#050505] relative isolate font-cairo overflow-x-hidden text-right" dir="rtl">
       {/* MAGICAL BACKGROUND LAYER */}
@@ -197,58 +199,97 @@ export default function MenuClient({ categories, settings }: { categories: Categ
       </div>
 
       <header className="relative pt-20 pb-16 px-8 text-center overflow-hidden">
-         <div className="max-w-4xl mx-auto flex flex-col items-center">
-            <div className={`mb-8 px-6 py-2 rounded-full border flex items-center gap-3 transition-all duration-700 animate-fade-in ${localIsOpen ? 'bg-green-500/5 border-green-500/20 text-green-500' : 'bg-red-500/5 border-red-500/20 text-red-500'}`}>
-               <span className={`w-2 h-2 rounded-full animate-pulse ${localIsOpen ? 'bg-green-500' : 'bg-red-500'}`}></span>
-               <span className="text-[10px] font-black uppercase tracking-[0.3em]">
-                  {localIsOpen ? 'مفتوح الآن • نتشرف بخدمتكم' : 'مغلق حالياً • نراكم لاحقاً'}
-               </span>
-            </div>
+        <div className="max-w-4xl mx-auto flex flex-col items-center">
+          <div className={`mb-8 px-6 py-2 rounded-full border flex items-center gap-3 transition-all duration-700 animate-fade-in ${localIsOpen ? 'bg-green-500/5 border-green-500/20 text-green-500' : 'bg-red-500/5 border-red-500/20 text-red-500'}`}>
+            <span className={`w-2 h-2 rounded-full animate-pulse ${localIsOpen ? 'bg-green-500' : 'bg-red-500'}`}></span>
+            <span className="text-[10px] font-black uppercase tracking-[0.3em]">
+              {localIsOpen ? 'مفتوح الآن • نتشرف بخدمتكم' : 'مغلق حالياً • نراكم لاحقاً'}
+            </span>
+          </div>
 
-            <div className="relative group mb-10 transform hover:rotate-3 transition-transform duration-700">
-               <div className="absolute -inset-4 bg-gradient-to-r from-brand-red to-brand-orange rounded-[3rem] blur-2xl opacity-10 group-hover:opacity-30 transition"></div>
-               <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-[3rem] overflow-hidden border border-white/10 shadow-3xl bg-black">
-                  <Image 
-                    src="/55555555555_page-0001.jpg" 
-                    alt="Logo" 
-                    fill 
-                    priority 
-                    className="object-cover scale-110" 
-                  />
-               </div>
+          <div className="relative group mb-10 transform hover:rotate-3 transition-transform duration-700">
+            <div className="absolute -inset-4 bg-gradient-to-r from-brand-red to-brand-orange rounded-[3rem] blur-2xl opacity-10 group-hover:opacity-30 transition"></div>
+            <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-[3rem] overflow-hidden border border-white/10 shadow-3xl bg-black">
+              <Image 
+                src="/55555555555_page-0001.jpg" 
+                alt="Logo" 
+                fill 
+                priority 
+                className="object-cover scale-110" 
+              />
             </div>
+          </div>
 
-            <h1 className="text-4xl md:text-8xl font-black text-white mb-4 tracking-tighter leading-none italic">
-               TABASCO <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-red via-brand-orange to-brand-red animate-gradient-x">AL-SHAM</span>
-            </h1>
-            
-            <p className="max-w-2xl mx-auto text-gray-400 text-xs md:text-base font-bold leading-relaxed opacity-70 px-4 mb-8">
-               استمتع بتجربة طعام استثنائية تجمع بين المذاق الشامي الأصيل وأجود المكونات، لتمنحك نكهة أسطورية لا تُنسى في كل لقمة.
-            </p>
+          <h1 className="text-4xl md:text-8xl font-black text-white mb-4 tracking-tighter leading-none italic">
+            TABASCO <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-red via-brand-orange to-brand-red animate-gradient-x">AL-SHAM</span>
+          </h1>
+          
+          <p className="max-w-2xl mx-auto text-gray-400 text-xs md:text-base font-bold leading-relaxed opacity-70 px-4 mb-8">
+            استمتع بتجربة طعام استثنائية تجمع بين المذاق الشامي الأصيل وأجود المكونات، لتمنحك نكهة أسطورية لا تُنسى في كل لقمة.
+          </p>
 
-               <div className="mt-8 px-8 py-5 rounded-[2.5rem] bg-white/[0.02] border border-white/5 flex flex-col items-center gap-2 max-w-sm mx-auto shadow-2xl relative group overflow-hidden">
-                  <div className="absolute inset-0 bg-brand-orange/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <span className="text-gray-500 text-[10px] font-black uppercase tracking-[0.5em] opacity-60">أوقات العمل المعتمدة</span>
-                  <div className="flex items-center gap-4 relative z-10">
-                     <div className="flex flex-col items-center">
-                        <span className="text-white font-black text-xl tracking-tighter italic">{format12h(settings?.openTime || "14:30")} - {format12h(settings?.closeTime || "01:30")}</span>
-                        <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mt-1">OPEN HOURS</span>
-                     </div>
-                     <div className="w-[1px] h-10 bg-white/5"></div>
-                     <div className="flex flex-col items-center">
-                        <span className="text-brand-orange font-black text-xs uppercase tracking-widest">
-                           {(settings?.openDays?.split(',')?.length === 7) ? 'طوال أيام الأسبوع' : 'أيام عمل محددة'}
-                        </span>
-                        <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest mt-1">SCHEDULE</span>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </header>
+          <div className="mt-12 w-full max-w-2xl mx-auto animate-fade-in px-4">
+             <div className="px-10 py-8 rounded-[3.5rem] bg-white/[0.02] border border-white/5 flex flex-col items-center gap-6 max-w-md mx-auto shadow-[0_50px_100px_-30px_rgba(0,0,0,0.9)] relative group overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-brand-red/5 to-brand-orange/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                
+                <div className="flex items-center gap-3 relative z-10">
+                   <div className="w-2 h-2 rounded-full bg-brand-orange animate-pulse shadow-[0_0_10px_rgba(255,157,0,0.4)]"></div>
+                   <span className="text-gray-500 text-[10px] font-black uppercase tracking-[0.4em] opacity-80 font-cairo">أوقات العمل المعتمدة</span>
+                </div>
+
+                <div className="flex items-center gap-8 relative z-10">
+                   <div className="flex flex-col items-center">
+                      <div className="flex items-center gap-3 mb-1" dir="ltr">
+                         <span className="text-white font-black text-3xl tracking-tighter italic drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                            {(() => {
+                              const [h, m] = (settings?.openTime || "14:30").split(':');
+                              const period = Number(h) >= 12 ? 'PM' : 'AM';
+                              return `${Number(h) % 12 || 12}:${m} ${period}`;
+                            })()}
+                         </span>
+                         <span className="text-gray-700 font-black text-xl">-</span>
+                         <span className="text-white font-black text-3xl tracking-tighter italic drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                            {(() => {
+                              const [h, m] = (settings?.closeTime || "01:30").split(':');
+                              const period = Number(h) >= 12 ? 'PM' : 'AM';
+                              return `${Number(h) % 12 || 12}:${m} ${period}`;
+                            })()}
+                         </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 opacity-40 group-hover:opacity-60 transition-opacity">
+                         <span className="text-[9px] font-bold text-gray-500 uppercase tracking-[0.2em]">Daily Schedule</span>
+                         <span className="text-xs">🕒</span>
+                      </div>
+                   </div>
+                   
+                   <div className="w-[1px] h-14 bg-gradient-to-b from-transparent via-white/10 to-transparent"></div>
+                   
+                   <div className="flex flex-col items-center">
+                      <span className="text-brand-orange font-black text-base uppercase tracking-widest italic drop-shadow-[0_0_10px_rgba(255,157,0,0.2)]">
+                         {(settings?.openDays?.split(',')?.length === 7) ? 'طوال الأسبوع' : 'أيام محددة'}
+                      </span>
+                      <div className="flex items-center gap-1.5 mt-1 opacity-40 group-hover:opacity-60 transition-opacity">
+                         <span className="text-[9px] font-bold text-gray-500 uppercase tracking-[0.2em]">Open Days</span>
+                         <span className="text-xs">🗓️</span>
+                      </div>
+                   </div>
+                </div>
+
+                {/* Operational Status Pill */}
+                <div className={`relative z-10 px-8 py-2 rounded-full border text-[10px] font-black tracking-[0.3em] uppercase transition-all duration-700 shadow-2xl ${localIsOpen ? 'bg-green-500/10 border-green-500/20 text-green-500' : 'bg-brand-red/10 border-brand-red/20 text-brand-red'}`}>
+                   {localIsOpen ? 'Live Now • Open' : 'Store Closed'}
+                </div>
+             </div>
+          </div>
+        </div>
+      </header>
 
       <div className="max-w-7xl mx-auto px-8 relative z-20">
         {/* CATEGORY SELECTOR - Original Design with Anti-Glitch Fixes */}
-        <div className={`sticky top-0 z-[100] transition-all duration-500 -mx-8 px-8 py-4 ${scrolled ? 'bg-black/90 backdrop-blur-2xl border-b border-white/5 shadow-2xl' : 'bg-transparent'}`}>
+        <div 
+          className={`sticky top-0 z-[100] transition-all duration-700 -mx-8 px-8 py-4 transform-gpu will-change-[transform,backdrop-filter] ${scrolled ? 'bg-black/90 backdrop-blur-3xl border-b border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] translate-y-0' : 'bg-transparent -translate-y-1'}`}
+          style={{ transform: 'translateZ(0)' }}
+        >
           <div className="max-w-4xl mx-auto">
             <div className="flex gap-4 overflow-x-auto scrollbar-hide px-2 pb-2">
                <button 
@@ -258,16 +299,28 @@ export default function MenuClient({ categories, settings }: { categories: Categ
                >
                   الكل
                </button>
-               {sortedCategories.map((cat) => (
-                  <button 
-                    key={cat.id} 
-                    onClick={() => setActiveCategoryId(cat.id)} 
-                    className={`whitespace-nowrap px-10 py-4 rounded-full text-[11px] font-black tracking-widest uppercase transition-all duration-500 active:scale-90 ${activeCategoryId === cat.id ? 'bg-brand-red text-white shadow-[0_10px_30px_rgba(255,59,59,0.3)]' : 'bg-white/5 text-gray-400 hover:text-white border border-white/5'}`}
-                    dir="rtl"
-                  >
-                    {cat.name}
-                  </button>
-               ))}
+               {sortedCategories.map((cat) => {
+                  const isSpecial = cat.name === "الجديد والقسم الخاص";
+                  return (
+                    <button 
+                      key={cat.id} 
+                      onClick={() => setActiveCategoryId(cat.id)} 
+                      className={`relative whitespace-nowrap px-10 py-4 rounded-full text-[11px] font-black tracking-widest uppercase transition-all duration-500 active:scale-90 ${
+                        activeCategoryId === cat.id 
+                          ? isSpecial 
+                            ? 'bg-gradient-to-r from-brand-red via-brand-orange to-brand-red text-white shadow-[0_15px_40px_rgba(255,255,255,0.1)] scale-110 border-none'
+                            : 'bg-brand-red text-white shadow-[0_10px_30px_rgba(255,59,59,0.3)]' 
+                          : isSpecial
+                            ? 'bg-brand-red/10 text-brand-red border border-brand-red/20 shadow-[0_5px_15px_rgba(239,68,68,0.1)] opacity-70 hover:opacity-100'
+                            : 'bg-white/5 text-gray-400 hover:text-white border border-white/5'
+                      }`}
+                      dir="rtl"
+                    >
+                      {isSpecial && <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-brand-red text-[7px] px-2 py-0.5 rounded-full font-black animate-bounce shadow-xl">NEW</span>}
+                      {cat.name}
+                    </button>
+                  );
+               })}
             </div>
           </div>
         </div>
@@ -285,6 +338,7 @@ export default function MenuClient({ categories, settings }: { categories: Categ
               key={product.id}
               product={product}
               idx={idx}
+              isSpecialCategory={product.categoryId === specialCategoryId}
               localIsOpen={localIsOpen}
               getQuantity={getQuantity}
               addToCart={addToCart}
@@ -416,6 +470,7 @@ export default function MenuClient({ categories, settings }: { categories: Categ
 const ProductCard = React.memo(({ 
   product, 
   idx, 
+  isSpecialCategory,
   localIsOpen, 
   getQuantity, 
   addToCart, 
@@ -431,39 +486,68 @@ const ProductCard = React.memo(({
 
   return (
     <div 
-      className="group relative animate-slide-up" 
+      className="group relative animate-slide-up transform-gpu" 
       style={{ 
-        animationDelay: `${idx * 60}ms`,
+        animationDelay: `${idx * 40}ms`,
         contentVisibility: 'auto',
-        containIntrinsicSize: '400px'
+        containIntrinsicSize: '500px',
+        transform: 'translateZ(0)'
       }}
     >
-       <div className={`glass bg-white/[0.01] rounded-[1.5rem] md:rounded-[4rem] p-3 md:p-8 border border-white/5 hover:border-brand-red/40 hover:bg-white/[0.04] transition-all duration-700 relative overflow-hidden flex flex-col h-full ${(!localIsOpen || product.isAvailable === false) && 'grayscale opacity-60 pointer-events-none'}`}>
-          {product.isAvailable === false && (
-             <div className="absolute top-4 left-[-35px] bg-red-600 text-white text-[8px] md:text-[10px] font-black px-10 py-1 rotate-[-45deg] z-50 shadow-xl uppercase tracking-tighter">نفدت الكمية</div>
-          )}
-          
-          <div className="w-full h-40 md:h-72 mb-4 md:mb-10 rounded-[1.2rem] md:rounded-[3rem] overflow-hidden relative shadow-3xl bg-[#0f0f10] border border-white/5 group-hover:border-brand-red/20 transition-all duration-700">
-             {product.imageUrl ? (
-                <Image 
-                   src={product.imageUrl} 
-                   alt={product.name} 
-                   fill 
-                   priority={idx < 6}
-                   sizes="(max-width: 768px) 50vw, 33vw"
-                   className="object-cover group-hover:scale-125 transition-transform duration-[3000ms]" 
-                />
-             ) : (
-                <div className="w-full h-full flex items-center justify-center text-4xl md:text-7xl opacity-10">🍜</div>
-             )}
-             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-60"></div>
-             <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6 glass bg-black/80 px-4 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl border border-white/10 shadow-2xl">
-                <span className="text-lg md:text-2xl font-black text-brand-orange tracking-tighter italic">
-                   {currentPrice.toLocaleString("ar-IQ")}
-                   <small className="text-[9px] md:text-[10px] font-bold opacity-40 mr-1 uppercase NOT-italic">د.ع</small>
-                </span>
+        <div className={`glass bg-white/[0.01] rounded-[1.5rem] md:rounded-[4rem] p-3 md:p-8 border transition-all duration-700 relative overflow-hidden flex flex-col h-full 
+           ${(!localIsOpen || product.isAvailable === false) && 'grayscale opacity-60 pointer-events-none'} 
+           ${isSpecialCategory 
+             ? 'border-brand-red/60 bg-gradient-to-br from-brand-red/[0.08] via-transparent to-brand-orange/[0.05] shadow-[0_0_50px_rgba(239,68,68,0.15)] ring-1 ring-brand-red/20' 
+             : 'border-white/5 hover:border-brand-red/40 hover:bg-white/[0.04]'
+           }`}
+        >
+           {/* Shimmer Effect for Special Items */}
+           {isSpecialCategory && (
+             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.05] to-transparent -translate-x-[100%] animate-shimmer pointer-events-none"></div>
+           )}
+           
+           {isSpecialCategory && (
+             <div className="absolute top-6 right-6 z-50 flex flex-col items-end gap-2 scale-110">
+                <div className="bg-gradient-to-r from-brand-red via-brand-orange to-brand-red text-white text-[9px] md:text-[11px] font-black px-5 py-2 rounded-full shadow-[0_10px_30px_rgba(239,68,68,0.4)] flex items-center gap-2 border border-white/20 animate-pulse-slow">
+                   <span className="text-sm">🔥</span>
+                   قسم العروض الجديدة
+                </div>
              </div>
-          </div>
+           )}
+
+           {/* Unavailable Banner */}
+           {product.isAvailable === false && (
+              <div className="absolute top-4 left-[-35px] bg-red-600 text-white text-[8px] md:text-[10px] font-black px-10 py-1 rotate-[-45deg] z-50 shadow-xl uppercase tracking-tighter">نفدت الكمية</div>
+           )}
+           
+           <div className={`w-full h-40 md:h-72 mb-4 md:mb-10 rounded-[1.2rem] md:rounded-[3rem] overflow-hidden relative shadow-3xl bg-[#0f0f10] border transition-all duration-700 
+             ${isSpecialCategory ? 'border-brand-red/40 scale-[1.02] shadow-[0_0_40px_rgba(239,68,68,0.2)]' : 'border-white/5 group-hover:border-brand-red/20'}
+           `}>
+              {isSpecialCategory && (
+                 <div className="absolute inset-0 bg-gradient-to-t from-brand-red/20 via-transparent to-transparent z-10 pointer-events-none"></div>
+              )}
+              {product.imageUrl ? (
+                 <Image 
+                    src={product.imageUrl} 
+                    alt={product.name} 
+                    fill 
+                    priority={idx < 4}
+                    sizes="(max-width: 768px) 50vw, 33vw"
+                    className="object-cover group-hover:scale-110 transition-transform duration-[2000ms] ease-out will-change-transform" 
+                 />
+              ) : (
+                 <div className="w-full h-full flex items-center justify-center text-4xl md:text-7xl opacity-10">🍜</div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-60"></div>
+              <div className={`absolute bottom-4 right-4 md:bottom-6 md:right-6 glass px-4 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl border border-white/10 shadow-2xl transition-all
+                 ${isSpecialCategory ? 'bg-brand-red/90 text-white border-brand-red/20 py-2.5 md:py-4 scale-110' : 'bg-black/80'}
+              `}>
+                 <span className={`text-lg md:text-3xl font-black italic tracking-tighter transition-colors ${isSpecialCategory ? 'text-white' : 'text-brand-orange'}`}>
+                    {currentPrice.toLocaleString("ar-IQ")}
+                    <small className="text-[9px] md:text-[11px] font-bold opacity-60 mr-1 uppercase NOT-italic">د.ع</small>
+                 </span>
+              </div>
+           </div>
 
           <div className="flex-grow">
              <h3 className="text-xl md:text-2xl font-black text-white mb-2 md:mb-3 tracking-tight">{product.name}</h3>

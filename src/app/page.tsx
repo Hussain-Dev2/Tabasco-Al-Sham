@@ -6,17 +6,16 @@ export const dynamic = "force-dynamic";
 
 export default async function Home() {
   noStore();
-  const [categories, settings] = await Promise.all([
-    prisma.category.findMany({
-      include: {
-        products: true,
-      },
-      orderBy: {
-        createdAt: "asc"
-      }
-    }),
-    prisma.settings.findUnique({ where: { id: "global" } })
-  ]);
+  const categories = await prisma.category.findMany({
+    include: {
+      products: true,
+    },
+    orderBy: {
+      createdAt: "asc"
+    }
+  });
+
+  const settings = await prisma.settings.findUnique({ where: { id: "global" } });
 
   const settingsData = {
     isOpen: settings?.isOpen ?? true,
